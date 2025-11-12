@@ -2,6 +2,11 @@
 #include "esp_adc_cal.h"
 #include "driver/adc.h"
 
+const int resolution = 512;
+int raw_buffer[resolution];
+int count_raw=0;
+int raw_intermediate = 0;
+
 // Параметры для GPIO 27 (ADC2, канал 7)
 #define DEFAULT_VREF    1100        // Значение Vref по умолчанию (1100 мВ = 1.1 В)
 #define ADC_UNIT        ADC_UNIT_2  // Используем ADC2
@@ -41,11 +46,17 @@ void setup() {
 
 void loop() {
   int raw_adc = 0;
-  
+  count_raw++;
   // 1. Считывание "сырого" значения с ADC2
   // Функция adc2_get_raw возвращает ESP_OK при успешном считывании
   esp_err_t status = adc2_get_raw((adc2_channel_t)ADC_CHANNEL, ADC_WIDTH, &raw_adc);
-
+  raw_buffer[count_raw] = raw_adc;
+  if (count_raw > resolution){
+    for (int i = 0; i < resolution; i++){
+      raw_intermediate += raw_buffer[i];
+    }
+    raw_adc = raw_intermediate / resolution;
+  }
   if (status == ESP_OK) {
       // 2. Преобразование сырого значения в напряжение (в мВ) с компенсацией нелинейности
       uint32_t voltage_mv = esp_adc_cal_raw_to_voltage(raw_adc, &adc_chars);
