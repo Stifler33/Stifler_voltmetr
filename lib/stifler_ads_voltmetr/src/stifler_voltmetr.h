@@ -1,0 +1,38 @@
+#include <Adafruit_ADS1X15.h>
+
+class Stifler_voltmetr: public Adafruit_ADS1X15{
+    public:
+        /**
+        * Устанавливаем значение дельты для вычисления напряжения
+        * @param max_mv максимальное ожидаемое напряжение
+        * @param max_adc_value максимальное ожидаемое цифровое значение напряжения
+        */
+        void set_delta(int max_mv = 30000, int max_adc_value = 32767);
+
+        /**
+         * Получить напряжение
+         */
+        float read_voltage();
+
+        /**
+         * Записать измеренное напряжение в переменную.
+         * 
+         * Возвращает true если акб подключен правильно, иначе false
+         * 
+         * @param value переменная для хранения измеренного напряжения
+         */
+        bool read_voltage(float *value);
+
+        /**
+         * Задаем номер канала на котором будем считывать напряжение
+         * 
+         * адрес датчика и шина i2c на которой он находиться
+         * 
+         * @param channel канал который читаем
+         */
+        bool begin(uint8_t channel, uint8_t pin_error, uint8_t i2c_address = 72U, TwoWire *wire = &Wire);
+    private:
+        float delta;
+        uint8_t channel;
+        uint8_t pin_error;
+};
