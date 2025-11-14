@@ -30,9 +30,19 @@ class Stifler_voltmetr: public Adafruit_ADS1X15{
          * 
          * @param channel канал который читаем
          */
-        bool begin(uint8_t channel, uint8_t pin_error, uint8_t i2c_address = 72U, TwoWire *wire = &Wire);
+        bool begin(uint8_t ch_voltage, uint8_t ch_polarity, uint8_t i2c_address = 72U, TwoWire *wire = &Wire);
+
+        /**
+         * Задаем канал на котором отслеживаем поялрность подключенного напряжения
+         * @param channel номер канала
+         */        
     private:
+        /*Переменная для хранения дельты*/
         float delta;
-        uint8_t channel;
-        uint8_t pin_error;
+        /*Канал на котором отслеживаем напряжение*/
+        uint8_t ch_v;
+        /*Канал для проверки полярности подключенного напряжения*/
+        uint8_t ch_p;
+        /*Максимальное сырое значение напряжения на канале*/
+        int max_d = 32767;
 };
