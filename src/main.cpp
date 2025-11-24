@@ -1,32 +1,36 @@
 #include <stifler_wifi.h>
 #include <stifler_mqtt.h>
+#include <charger_test_board.h>
 
-#define PIN_RELAY 4
+// void relay_switch(String message){
+//   if (message == "on"){
+//     digitalWrite(PIN_RELAY, HIGH);
+//     public_data("relay_status", "on");
+//   }
+//   if (message == "off"){
+//     digitalWrite(PIN_RELAY, LOW);
+//     public_data("relay_status", "off");
+//   }
+// }
 
-void relay_switch(String message){
-  if (message == "on"){
-    digitalWrite(PIN_RELAY, HIGH);
-    public_data("relay_status", "on");
-  }
-  if (message == "off"){
-    digitalWrite(PIN_RELAY, LOW);
-    public_data("relay_status", "off");
-  }
-}
-
-void setup(){
-    pinMode(PIN_RELAY, OUTPUT);
+void setup(){    
     set_pin_reset(0, LOW);
     init_stif();
     arduino_ota_initial();
-    add_pub_topic("connect", "esp32/connect");
-    add_pub_topic("relay_status", "stifler/home/bathroom/relay/status");
-    add_sub_topic("relay_switch", "stifler/home/bathroom/relay", relay_switch);
+    add_pub_topic("connect", "esp32/connect");    
+    add_sub_topic("relay_end", "charger/test/rl_end", switch_end_relay);
+    add_sub_topic("relay_pu", "charger/test/rl_pu", switch_pu_relay);
+    add_sub_topic("relay_plus", "charger/test/rl_plus", switch_plus_relay);
+    add_sub_topic("relay_minus", "charger/test/rl_minus", switch_minus_relay);
+    add_sub_topic("cc", "charger/test/cc", CC);
+    add_sub_topic("cv", "charger/test/cv", CV);
     init_brocker();
+    init_output();
 }
 
 void loop(){
     if (loop_status_wifi()){
         loop_mqtt();
-    }    
+    }
+    loop_relay();
 }
