@@ -1,6 +1,9 @@
 #pragma once
 #include <Arduino.h>
 #include <GTimer.h>
+#include <stifler_voltmetr.h>
+
+Stifler_voltmetr voltmetr;
 
 void init_output();
 /**
