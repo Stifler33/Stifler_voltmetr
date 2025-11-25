@@ -3,8 +3,6 @@
 #include <GTimer.h>
 #include <stifler_voltmetr.h>
 
-Stifler_voltmetr voltmetr;
-
 void init_output();
 /**
  * rl_end
@@ -24,3 +22,4 @@ void CC(String value);
 
 void CV(String value);
 
+void discharge(String value);

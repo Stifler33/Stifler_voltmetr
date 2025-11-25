@@ -20,6 +20,8 @@ uint8_t ch_rl_minus = 3;
 uint8_t ch_cc = 4;
 uint8_t ch_cv = 5;
 
+uint8_t ch_dis = 6;
+
 int freq_pwm = 20000;
 uint8_t pwm_duty_on = 130;
 
@@ -47,6 +49,10 @@ void init_output(){
 
     ledcSetup(ch_cv, freq_pwm, 8);
     ledcAttachPin(cv, ch_cv);
+    
+    ledcSetup(ch_dis, freq_pwm, 10);
+    ledcAttachPin(dis_bat, ch_dis);
+
 }
 
 void switch_end_relay(String type){
@@ -113,3 +119,9 @@ void loop_relay(){
         ledcWrite(ch_rl_minus, pwm_duty_on);
     }
 }
+
+void discharge(String value){
+    int v = value.toInt();
+    ledcWrite(ch_dis, v);
+}
+
