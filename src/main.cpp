@@ -71,11 +71,19 @@ void loop(){
     }
     loop_relay();    
     if (wait_pub){
-      String volt = String(voltmetr.read_voltage());      
+      String volt;
+      if (voltmetr.is_ready()){
+        volt = String(voltmetr.read_voltage());
+      }else{
+        volt = -1;
+      }     
       public_data("voltage", volt.c_str());
       if (ina219.begin()){
         public_data("amperage", String(ina219.getCurrent()).c_str());
         public_data("voltage_ina", String(ina219.getVoltage()).c_str());
+      }else{
+        public_data("amperage", String(-1).c_str());
+        public_data("voltage_ina", String(-1).c_str());
       }
 
       if (flag_map_volt){

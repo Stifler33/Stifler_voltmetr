@@ -2,6 +2,7 @@
 
 Preferences flash_calib;
 
+std::map<int, float> calibration_values;
 bool flag_map_volt = false;
 int counter_measure = 0;
 
@@ -159,6 +160,7 @@ bool wait_voltage(float new_voltage){
 void save_calibration_value(int value_duty, float value_voltage){
     if (flash_calib.begin("calib_voltage")){
         flash_calib.putFloat(String(value_duty).c_str(), value_voltage);
+        flash_calib.end();
     }
 }
 
@@ -171,5 +173,6 @@ void get_calibration(){
             Serial.println(value);
             calibration_values[i] = value;
         }
+        flash_calib.end();
     }    
 }

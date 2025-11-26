@@ -15,7 +15,8 @@ bool Stifler_voltmetr::begin(uint8_t ch_voltage, uint8_t ch_polarity, uint8_t i2
     // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
     // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
     setGain(GAIN_FOUR);
-    return Adafruit_ADS1X15::begin(i2c_address, wire);    
+    ready = Adafruit_ADS1X15::begin(i2c_address, wire);
+    return ready;
 }
 
 void Stifler_voltmetr::set_delta(int max_mv, int max_adc_value){
@@ -37,4 +38,8 @@ bool Stifler_voltmetr::read_voltage(float *value){
     }else{
         return false;
     }
+}
+
+bool Stifler_voltmetr::is_ready(){
+    return ready;
 }
