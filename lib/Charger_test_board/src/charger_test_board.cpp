@@ -177,3 +177,14 @@ void get_calibration(){
         flash_calib.end();
     }    
 }
+
+void check_flash_calib(){
+    if (flash_calib.begin("calib_voltage", false)){
+        Serial.println("start init calib");
+        for (int i = 0; i < 1024; i++){
+            flash_calib.putFloat(String(i).c_str(), 0.0f);
+        }
+        flash_calib.end();
+        Serial.println("end init calib");
+    }
+}

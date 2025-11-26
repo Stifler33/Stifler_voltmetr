@@ -40,3 +40,5 @@ bool wait_voltage(float new_voltage);
 void save_calibration_value(int value_duty, float value_voltage);
 
 void get_calibration();
+
+void check_flash_calib();

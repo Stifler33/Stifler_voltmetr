@@ -27,8 +27,9 @@ void setup(){
   
   Serial.begin(115200);
   Serial.println("hello");
-  delay(2000);  
-  get_calibration();
+  delay(3000);  
+  check_flash_calib();
+  // get_calibration();
   set_pin_reset(0, LOW);
   init_stif();
   arduino_ota_initial();
