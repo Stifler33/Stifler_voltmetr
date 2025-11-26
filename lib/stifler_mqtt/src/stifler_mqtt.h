@@ -26,7 +26,7 @@ void add_pub_topic(String name_topic, const char* topic);
 void add_sub_topic(String name_topic, const char* topic, std::function<void(String)> handler=nullptr);
 // void add_handler(const char* topic, std::function<void()> handler);
 void init_brocker();
-void loop_mqtt();
+bool loop_mqtt();
 
 /**
  * Отправляем данные на сервер по имени топика который сохранили функцией add_pub_topic

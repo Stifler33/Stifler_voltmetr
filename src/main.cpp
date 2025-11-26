@@ -25,12 +25,27 @@ void set_delta(String delta){
 
 void setup(){
 
+  Serial.begin(115200);
+  Serial.println("hello");
+  delay(2000);
+  get_calibration();
+  
   set_pin_reset(0, LOW);
   init_stif();
   arduino_ota_initial();
   add_pub_topic("connect", "esp32/connect"); 
+
   add_pub_topic("voltage", "charger/test/voltage");
+  add_pub_topic("voltage_ina", "charger/test/voltage_ina");
+
   add_pub_topic("amperage", "charger/test/amperage");
+  add_pub_topic("relay_end", "charger/test/rl_end");
+  add_pub_topic("relay_pu", "charger/test/rl_pu");
+
+  add_pub_topic("cc", "charger/test/cc");
+  add_pub_topic("cv", "charger/test/cv");
+
+  add_pub_topic("calib_data", "charger/test/calib_data");
 
   add_sub_topic("relay_end", "charger/test/rl_end", switch_end_relay);
   add_sub_topic("relay_pu", "charger/test/rl_pu", switch_pu_relay);
@@ -40,6 +55,7 @@ void setup(){
   add_sub_topic("cc", "charger/test/cc", CC);
   add_sub_topic("cv", "charger/test/cv", CV);
   add_sub_topic("dis", "charger/test/dis", discharge);
+  add_sub_topic("calibrate", "charger/test/calibrate", map_volt);
 
   init_brocker();
   init_output();
@@ -55,11 +71,28 @@ void loop(){
     }
     loop_relay();    
     if (wait_pub){
-      String volt = String(voltmetr.read_voltage());
+      String volt = String(voltmetr.read_voltage());      
       public_data("voltage", volt.c_str());
       if (ina219.begin()){
         public_data("amperage", String(ina219.getCurrent()).c_str());
+        public_data("voltage_ina", String(ina219.getVoltage()).c_str());
       }
+
+      if (flag_map_volt){
+        if (counter_measure < max_counter_measure){
+          if (wait_voltage(volt.toFloat())){
+            save_calibration_value(counter_measure, volt.toFloat());
+            public_data("calib_data", String(String(volt) + " " + String(counter_measure)).c_str());
+            counter_measure++;
+          }           
+          public_data("cc", "20");
+          public_data("cv", String(counter_measure).c_str());
+        }else{
+          flag_map_volt = false;
+          counter_measure = 0;
+        }
+      }
+
     }
 }
 

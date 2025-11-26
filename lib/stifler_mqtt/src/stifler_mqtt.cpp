@@ -58,8 +58,7 @@ void subscribe_topics(){
     }
 }
 
-void reconnect() {
-  // Цикл, пока не подключимся
+void reconnect() {  
   if (!client.connected()) {    
     // Попытка подключения
     if (client.connect("my_id", sub_data.login.c_str(), sub_data.password.c_str())) {         
@@ -70,11 +69,11 @@ void reconnect() {
   }
 }
 
-void loop_mqtt(){
+bool loop_mqtt(){
     if (tmr_mqtt_loop && !client.connected()){
         reconnect();
     }
-    client.loop();
+    return client.loop();
 }
 
 void add_pub_topic(String name_topic, const char* topic){
@@ -88,6 +87,6 @@ void add_sub_topic(String name_topic, const char* topic, std::function<void(Stri
 
 void public_data(String name_topic, const char* payload){
     if (pub_topics.count(name_topic)){
-        client.publish(pub_topics[name_topic], payload);
+        client.publish(pub_topics[name_topic], payload, true);
     }
 }
