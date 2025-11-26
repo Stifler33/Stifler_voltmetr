@@ -25,6 +25,7 @@ void add_pub_topic(String name_topic, const char* topic);
  */
 void add_sub_topic(String name_topic, const char* topic, std::function<void(String)> handler=nullptr);
 // void add_handler(const char* topic, std::function<void()> handler);
+
 void init_brocker();
 bool loop_mqtt();
 
@@ -34,3 +35,5 @@ bool loop_mqtt();
  * @param payload сообщение в текстовом формате
  */
 void public_data(String name_topic, const char* payload);
+
+void unsubscribe(const char *topic);

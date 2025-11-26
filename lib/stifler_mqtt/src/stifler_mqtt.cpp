@@ -90,3 +90,7 @@ void public_data(String name_topic, const char* payload){
         client.publish(pub_topics[name_topic], payload, true);
     }
 }
+
+void unsubscribe(const char *topic){
+    client.unsubscribe(topic);
+}

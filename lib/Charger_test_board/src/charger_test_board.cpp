@@ -138,12 +138,16 @@ void map_volt(String value){
         counter_measure = 0;
         public_data("relay_end", "on");
         public_data("relay_pu", "on");
+        unsubscribe("charger/test/cv");
+        flash_calib.begin("calib_voltage", false);
     }
     if (value == "off"){
         flag_map_volt = false;
         counter_measure = 0;        
         public_data("relay_end", "off");
         public_data("relay_pu", "off");
+        add_sub_topic("cv", "charger/test/cv", CV);
+        flash_calib.end();
     }
 }
 
@@ -157,11 +161,8 @@ bool wait_voltage(float new_voltage){
     }
 }
 
-void save_calibration_value(int value_duty, float value_voltage){
-    if (flash_calib.begin("calib_voltage")){
-        flash_calib.putFloat(String(value_duty).c_str(), value_voltage);
-        flash_calib.end();
-    }
+void save_calibration_value(int value_duty, float value_voltage){    
+    flash_calib.putFloat(String(value_duty).c_str(), value_voltage);    
 }
 
 void get_calibration(){

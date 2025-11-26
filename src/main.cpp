@@ -24,12 +24,11 @@ void set_delta(String delta){
 }
 
 void setup(){
-
+  
   Serial.begin(115200);
   Serial.println("hello");
-  delay(2000);
+  delay(2000);  
   get_calibration();
-  
   set_pin_reset(0, LOW);
   init_stif();
   arduino_ota_initial();
@@ -92,9 +91,8 @@ void loop(){
             save_calibration_value(counter_measure, volt.toFloat());
             public_data("calib_data", String(String(volt) + " " + String(counter_measure)).c_str());
             counter_measure++;
-          }           
-          public_data("cc", "20");
-          public_data("cv", String(counter_measure).c_str());
+          }          
+          CV(String(counter_measure));
         }else{
           flag_map_volt = false;
           counter_measure = 0;
