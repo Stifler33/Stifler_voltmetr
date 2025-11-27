@@ -8,16 +8,7 @@ INA219 ina219(0.01, 32.0);
 Stifler_voltmetr voltmetr;
 int delta = 0;
 GTimer<millis> wait_pub(1000, true);
-// void relay_switch(String message){
-//   if (message == "on"){
-//     digitalWrite(PIN_RELAY, HIGH);
-//     public_data("relay_status", "on");
-//   }
-//   if (message == "off"){
-//     digitalWrite(PIN_RELAY, LOW);
-//     public_data("relay_status", "off");
-//   }
-// }
+
 
 void set_delta(String delta){
   voltmetr.set_delta(delta.toInt());
@@ -27,8 +18,7 @@ void setup(){
   
   Serial.begin(115200);
   Serial.println("hello");
-  delay(3000);    
-  // get_calibration();
+    
   set_pin_reset(0, LOW);
   init_stif();
   arduino_ota_initial();
