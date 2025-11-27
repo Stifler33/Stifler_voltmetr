@@ -7,8 +7,8 @@ void setup(){
   Serial.begin(115200);
   Serial.println("hello");  
   delay(3000);
-  Serial.println(volt_map.init());
-  volt_map.print_size();
+  volt_map.init();
+  
 }
 
 void loop(){
