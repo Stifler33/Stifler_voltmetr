@@ -1,10 +1,8 @@
 #include "charger_test_board.h"
 
-Preferences flash_calib;
-
-std::map<int, float> calibration_values;
 bool flag_map_volt = false;
 int counter_measure = 0;
+Voltage_map volt_map;
 
 uint8_t rl_minus = 12;
 uint8_t rl_plus = 4;
@@ -107,10 +105,15 @@ void CC(String value){
     ledcWrite(ch_cc, pwm);
 }
 
+void CC(int value){    
+    ledcWrite(ch_cc, value);
+}
+
 void CV(String value){
     int pwm = value.toInt();
     ledcWrite(ch_cv, pwm);
 }
+
 
 void loop_relay(){
     if (kick_end){
@@ -136,24 +139,26 @@ void map_volt(String value){
     if (value == "on"){
         flag_map_volt = true;
         counter_measure = 0;
-        public_data("relay_end", "on");
-        public_data("relay_pu", "on");
-        unsubscribe("charger/test/cv");
-        flash_calib.begin("calib_voltage", false);
+        switch_end_relay("on");
+        switch_pu_relay("on");
+        // public_data("relay_end", "on");
+        // public_data("relay_pu", "on");
+        // unsubscribe("charger/test/cv");        
     }
     if (value == "off"){
         flag_map_volt = false;
-        counter_measure = 0;        
-        public_data("relay_end", "off");
-        public_data("relay_pu", "off");
-        add_sub_topic("cv", "charger/test/cv", CV);
-        flash_calib.end();
+        counter_measure = 0;
+        switch_end_relay("off");
+        switch_pu_relay("off");
+        // public_data("relay_end", "off");
+        // public_data("relay_pu", "off");
+        // add_sub_topic("cv", "charger/test/cv", CV);
     }
 }
 
 bool wait_voltage(float new_voltage){
     static float old_voltage;
-    if (old_voltage == new_voltage){
+    if (abs(new_voltage - old_voltage) < 0.005){
         return true;
     }else{
         old_voltage = new_voltage;
@@ -161,19 +166,7 @@ bool wait_voltage(float new_voltage){
     }
 }
 
-void save_calibration_value(int value_duty, float value_voltage){    
-    flash_calib.putFloat(String(value_duty).c_str(), value_voltage);    
-}
-
-void get_calibration(){
-    if (flash_calib.begin("calib_voltage", true)){
-        for (int i = 0; i < 1024; i++){
-            Serial.print(i);
-            float value = flash_calib.getFloat(String(i).c_str(), 0.0);
-            Serial.print(": ");
-            Serial.println(value);
-            calibration_values[i] = value;
-        }
-        flash_calib.end();
-    }    
+void set_voltage(String voltage){
+    CC(20);
+    CV(String(volt_map.get_duty(voltage.toFloat())));
 }

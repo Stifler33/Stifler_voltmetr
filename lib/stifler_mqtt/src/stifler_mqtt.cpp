@@ -87,7 +87,7 @@ void add_sub_topic(String name_topic, const char* topic, std::function<void(Stri
 
 void public_data(String name_topic, const char* payload){
     if (pub_topics.count(name_topic)){
-        client.publish(pub_topics[name_topic], payload, true);
+        client.publish(pub_topics[name_topic], payload);
     }
 }
 

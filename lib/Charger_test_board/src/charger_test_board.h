@@ -3,11 +3,11 @@
 #include <GTimer.h>
 #include <stifler_voltmetr.h>
 #include <stifler_mqtt.h>
-#include <Preferences.h>
+#include <stifler_spiffs.h>
 #include <map>
 
 extern std::map<int, float> calibration_values;
-
+extern Voltage_map volt_map;
 extern bool flag_map_volt;
 extern int counter_measure;
 const int max_counter_measure = 1024;
@@ -28,6 +28,7 @@ void switch_minus_relay(String type);
 void loop_relay();
 
 void CC(String value);
+void CC(int value);
 
 void CV(String value);
 
@@ -37,6 +38,4 @@ void map_volt(String value);
 
 bool wait_voltage(float new_voltage);
 
-void save_calibration_value(int value_duty, float value_voltage);
-
-void get_calibration();
+void set_voltage(String voltage);
