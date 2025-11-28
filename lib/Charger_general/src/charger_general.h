@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 #include <stifler_spiffs.h>
+#include <stifler_voltmetr.h>
+#include <stifler_relay.h>
 #include <GTimer.h>
 
 const static int pwm_freq = 20000;
@@ -35,6 +37,7 @@ class pwm_duty{
     public:
         const static uint32_t relay = 120;            
         const static uint32_t max = 255;
+        const static uint32_t max_pu = 1024;
         const static uint32_t min = 0;
 };
 

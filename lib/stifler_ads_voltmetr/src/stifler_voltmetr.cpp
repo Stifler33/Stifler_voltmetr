@@ -1,5 +1,7 @@
 #include "stifler_voltmetr.h"
 
+INA219 power_monitor(0.01, 32.0);
+
 bool Stifler_voltmetr::begin(uint8_t ch_voltage, uint8_t ch_polarity, uint8_t i2c_address, TwoWire *wire){
     ch_v = ch_voltage;    
     ch_p = ch_polarity;    
@@ -41,5 +43,15 @@ bool Stifler_voltmetr::read_voltage(float *value){
 }
 
 bool Stifler_voltmetr::is_ready(){
+    return ready;
+}
+
+bool Stifler_voltmetr::pm_voltage_amperage(float *for_value_voltage, float* for_value_amperage){
+    bool ready = power_monitor.begin();
+    if (ready){
+        *for_value_voltage = power_monitor.getVoltage();
+        *for_value_amperage = power_monitor.getCurrent();
+        return ready;
+    }
     return ready;
 }

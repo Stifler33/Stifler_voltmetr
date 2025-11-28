@@ -1,19 +1,19 @@
 #include <stifler_wifi.h>
 #include <stifler_mqtt.h>
-
 #include <charger_test_board.h>
 #include <GyverINA.h>
+#include <stifler_voltage_manager.h>
+
+Stifler_voltage_manager volt_manager;
 
 INA219 ina219(0.01, 32.0);
-
-Stifler_voltmetr voltmetr;
 
 int delta = 0;
 GTimer<millis> wait_pub(1000, true);
 
 
 void set_delta(String delta){
-  voltmetr.set_delta(delta.toInt());
+  // voltmetr.set_delta(delta.toInt());
 }
 
 void setup(){
@@ -23,6 +23,8 @@ void setup(){
   if (!volt_map.init()){
     return;
   }
+  volt_manager.begin();
+  
   delay(3000);
   volt_map.print_map();
   set_pin_reset(0, LOW);
@@ -58,8 +60,6 @@ void setup(){
   init_output();
 
   Wire.begin(18, 5);
-  voltmetr.begin(0, 1);
-  voltmetr.set_delta(24420);
 }
 
 void loop(){
@@ -69,14 +69,9 @@ void loop(){
     relay.loop();
     if (wait_pub){
       String volt_str;
-      float volt_f;
-      if (voltmetr.is_ready()){
-        volt_f = voltmetr.read_voltage();
-        volt_str = String(volt_f);
-      }else{
-        volt_str = -1;
-        volt_f = -1;
-      }     
+      float volt_f;      
+      volt_f = volt_manager.real_voltage;
+      volt_str = String(volt_f);      
       public_data("voltage", volt_str.c_str());
       if (ina219.begin()){
         public_data("amperage", String(ina219.getCurrent()).c_str());

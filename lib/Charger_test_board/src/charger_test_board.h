@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include <GTimer.h>
-#include <stifler_voltmetr.h>
 #include <stifler_mqtt.h>
 #include <stifler_spiffs.h>
 #include <stifler_relay.h>

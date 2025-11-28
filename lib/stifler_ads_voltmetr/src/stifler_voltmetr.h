@@ -1,4 +1,5 @@
 #include <Adafruit_ADS1X15.h>
+#include <GyverINA.h>
 
 class Stifler_voltmetr: public Adafruit_ADS1X15{
     public:
@@ -8,6 +9,13 @@ class Stifler_voltmetr: public Adafruit_ADS1X15{
         * @param max_adc_value максимальное ожидаемое цифровое значение напряжения
         */
         void set_delta(int max_mv = 30000, int max_adc_value = 32767);
+
+        /**
+         * Читаем напряжение с INA219
+         * @param value передаем переменную для записи в нее считанного напряжения
+         * @return true если ina в сети и напряжение считано
+         */        
+        bool pm_voltage_amperage(float *for_value_voltage, float* for_value_amperage);        
 
         /**
          * Получить напряжение
