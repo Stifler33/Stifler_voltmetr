@@ -1,6 +1,5 @@
 #pragma once
 #include <Arduino.h>
-#include <stifler_spiffs.h>
 #include <GTimer.h>
 
 const static int pwm_freq = 20000;
