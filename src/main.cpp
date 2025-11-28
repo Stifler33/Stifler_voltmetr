@@ -66,7 +66,7 @@ void loop(){
     if (loop_status_wifi()){
         loop_mqtt();
     }
-    loop_relay();    
+    relay.loop();
     if (wait_pub){
       String volt_str;
       float volt_f;

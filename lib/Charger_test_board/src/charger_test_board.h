@@ -4,7 +4,10 @@
 #include <stifler_voltmetr.h>
 #include <stifler_mqtt.h>
 #include <stifler_spiffs.h>
+#include <stifler_relay.h>
 #include <map>
+
+extern Stifler_relay relay;
 
 extern std::map<int, float> calibration_values;
 extern Voltage_map volt_map;
@@ -24,8 +27,6 @@ void switch_pu_relay(String type);
 void switch_plus_relay(String type);
 
 void switch_minus_relay(String type);
-
-void loop_relay();
 
 void CC(String value);
 void CC(int value);
