@@ -6,7 +6,8 @@
 #include <GTimer.h>
 
 const static int pwm_freq = 20000;
-
+const static float difference_min_voltage = 0.01;
+const static float difference_min_amperage = 0.01;
 /**
  * каналы ШИМ для разных целей
  */

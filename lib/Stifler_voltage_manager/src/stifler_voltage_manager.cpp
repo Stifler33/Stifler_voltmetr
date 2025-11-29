@@ -30,14 +30,19 @@ bool Stifler_voltage_manager::set_pu_voltage(float voltage){
 }
 
 void Stifler_voltage_manager::loop(){
+    relay.loop();
     is_ready = voltmetr.read_voltage(&real_voltage) 
     && voltmetr.pm_voltage_amperage(&pm_voltage, &pm_amperage);
 }
 
 bool Stifler_voltage_manager::charge(float desired_voltage, float desired_amperage){
-    bool is_voltage = real_voltage < desired_voltage;
-    bool is_amperage = pm_amperage < min_amperage_charge;
-   
+    bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
+    bool is_amperage = pm_amperage < min_amperage_charge;    
+    if (!is_voltage && is_amperage){
+        return true;
+    }
+    correct_amperage(desired_amperage);
+    return false;
 }
 
 void Stifler_voltage_manager::correct_amperage(float desired_amperage){

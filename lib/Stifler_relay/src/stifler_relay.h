@@ -4,7 +4,9 @@
 class Stifler_relay{
     public:
         Stifler_relay();
+        //Инициализируем PWM
         void begin();
+        //Необходимо постоянно вызывать в цикле
         void loop();
         class end{
             public:
