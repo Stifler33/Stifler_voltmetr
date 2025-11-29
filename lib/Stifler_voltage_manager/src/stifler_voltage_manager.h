@@ -1,5 +1,8 @@
 #pragma once
 #include <charger_general.h>
+#include <stifler_spiffs.h>
+#include <stifler_voltmetr.h>
+#include <stifler_relay.h>
 
 class Stifler_voltage_manager{
     public:

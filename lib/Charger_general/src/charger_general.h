@@ -1,8 +1,5 @@
 #pragma once
 #include <Arduino.h>
-#include <stifler_spiffs.h>
-#include <stifler_voltmetr.h>
-#include <stifler_relay.h>
 #include <GTimer.h>
 
 const static int pwm_freq = 20000;
@@ -45,7 +42,7 @@ class pwm_duty{
 
 class pin{
     public:
-        const static uint8_t load = 6;
+        const static uint8_t load = 23;
         class rl{
             public:
             const static uint8_t pu = 13;
@@ -65,6 +62,6 @@ class pin{
         class pu{
             public:
             const static uint8_t cc = 25;
-            const static uint8_t cv = 25;
+            const static uint8_t cv = 26;
         };
 };

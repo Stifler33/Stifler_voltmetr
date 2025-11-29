@@ -1,6 +1,5 @@
 #include <stifler_wifi.h>
 #include <stifler_mqtt.h>
-#include <charger_test_board.h>
 #include <GyverINA.h>
 #include <stifler_voltage_manager.h>
 
@@ -37,6 +36,7 @@ void setup(){
   
   Serial.begin(115200);
   Serial.println("hello");
+  Wire.begin(18, 5);
   volt_manager.begin();
   
   set_pin_reset(0, LOW);
@@ -57,31 +57,18 @@ void setup(){
   add_pub_topic("calib_data", "charger/test/calib_data");
   add_pub_topic("calibrate", "charger/test/calibrate");
 
-  add_sub_topic("relay_end", "charger/test/rl_end", switch_end_relay);
-  add_sub_topic("relay_pu", "charger/test/rl_pu", switch_pu_relay);
-  add_sub_topic("relay_plus", "charger/test/rl_plus", switch_plus_relay);
-  add_sub_topic("relay_minus", "charger/test/rl_minus", switch_minus_relay);
-  // add_sub_topic("delta", "charger/test/set_delta", set_delta);
-  // add_sub_topic("cc", "charger/test/cc", CC);
-  // add_sub_topic("cv", "charger/test/cv", CV);
-  // add_sub_topic("set_voltage", "charger/test/set_voltage", set_voltage);
-  add_sub_topic("dis", "charger/test/dis", discharge);
-  // add_sub_topic("calibrate", "charger/test/calibrate", map_volt);
   add_sub_topic("set_charge", "charger/test/set_charge", set_charge);
   add_sub_topic("set_charge_cc", "charger/test/set_charge_cc", set_charge_cc);
   add_sub_topic("set_charge_cv", "charger/test/set_charge_cv", set_charge_cv);
 
-  init_brocker();
-  init_output();
-
-  Wire.begin(18, 5);
+  init_brocker();  
 }
 
 void loop(){
     if (loop_status_wifi()){
         loop_mqtt();
     }
-    relay.loop();
+    volt_manager.loop();    
     if (wait_pub){    
       public_data("voltage", String(volt_manager.real_voltage).c_str());      
       public_data("amperage", String(volt_manager.pm_amperage).c_str());
