@@ -1,5 +1,38 @@
 #include <stifler_voltage_manager.h>
 
+/**
+ * какую полярность ампеража мы считаем разрядкой а какую зарядкой
+ * @param amperage измеренный ток
+ * @return true если зарядка false если разрядка
+ */
+auto amperage_polarity = [](float amperage){
+    return amperage > 0;
+};
+
+auto increment_cc = [](int *cc){
+    if (*cc < pwm_duty::max_pu){
+        ledcWrite(ch_pwm::cc, *cc++);
+    }
+};
+
+auto decrement_cc = [](int *cc){
+    if (*cc > 0){
+        ledcWrite(ch_pwm::cc, *cc--);
+    }
+};
+
+auto increment_cv = [](int *cv){
+    if (*cv < pwm_duty::max_pu){
+        ledcWrite(ch_pwm::cv, *cv++);
+    }
+};
+
+auto decrement_cv = [](int *cv){
+    if (*cv > 0){
+        ledcWrite(ch_pwm::cv, *cv--);
+    }
+};
+
 Stifler_voltage_manager::Stifler_voltage_manager(){
     delta_voltage = 24420;
     min_amperage_charge = 0.1;
@@ -36,9 +69,19 @@ void Stifler_voltage_manager::loop(){
 }
 
 bool Stifler_voltage_manager::charge(float desired_voltage, float desired_amperage){
+    if (charge_voltage != desired_voltage){
+        charge_voltage = desired_voltage;
+        set_pu_voltage(charge_voltage);
+    }
+    relay.end.on();
+    relay.pu.on();
     bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
     bool is_amperage = pm_amperage < min_amperage_charge;    
     if (!is_voltage && is_amperage){
+        set_pu_voltage(0.0);
+        charge_voltage = 0.0;
+        relay.end.on();
+        relay.pu.on();
         return true;
     }
     correct_amperage(desired_amperage);
@@ -46,17 +89,17 @@ bool Stifler_voltage_manager::charge(float desired_voltage, float desired_ampera
 }
 
 void Stifler_voltage_manager::correct_amperage(float desired_amperage){
-    float difference_amperage = pm_amperage - desired_amperage;
-    if (difference_amperage > 0.05){
-        if (duty_pwm_cc < pwm_duty::max_pu){
-            duty_pwm_cc--;
-            ledcWrite(ch_pwm::cc, duty_pwm_cc);
+    if (amperage_polarity(pm_amperage)){
+        if (pm_amperage < desired_amperage){
+            increment_cc(&duty_pwm_cc);
+        }else{
+            decrement_cc(&duty_pwm_cc);
         }
-    }
-    if (difference_amperage < -0.05){
-        if (duty_pwm_cc > 0 && duty_pwm_cc < pwm_duty::max_pu){
-            duty_pwm_cc++;
-            ledcWrite(ch_pwm::cc, duty_pwm_cc);
+    }else{
+        if (abs(pm_amperage) < desired_amperage){
+            increment_cc(&duty_pwm_cc);
+        }else{
+            decrement_cc(&duty_pwm_cc);
         }
     }
 }

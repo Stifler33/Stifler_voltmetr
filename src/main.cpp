@@ -6,27 +6,39 @@
 
 Stifler_voltage_manager volt_manager;
 
-INA219 ina219(0.01, 32.0);
-
-int delta = 0;
 GTimer<millis> wait_pub(1000, true);
 
-
 void set_delta(String delta){
-  // voltmetr.set_delta(delta.toInt());
+
+}
+
+bool charge = false;
+
+void set_charge(String flag){
+  if (flag == "on"){
+    charge = true;
+  }
+  if (flag == "off"){
+    charge = false;
+  }
+}
+
+float charge_cc;
+void set_charge_cc(String cc){
+  charge_cc = cc.toFloat();
+}
+
+float charge_cv;
+void set_charge_cv(String cv){
+  charge_cv = cv.toFloat();
 }
 
 void setup(){
   
   Serial.begin(115200);
   Serial.println("hello");
-  if (!volt_map.init()){
-    return;
-  }
   volt_manager.begin();
   
-  delay(3000);
-  volt_map.print_map();
   set_pin_reset(0, LOW);
   init_stif();
   arduino_ota_initial();
@@ -49,12 +61,15 @@ void setup(){
   add_sub_topic("relay_pu", "charger/test/rl_pu", switch_pu_relay);
   add_sub_topic("relay_plus", "charger/test/rl_plus", switch_plus_relay);
   add_sub_topic("relay_minus", "charger/test/rl_minus", switch_minus_relay);
-  add_sub_topic("delta", "charger/test/set_delta", set_delta);
+  // add_sub_topic("delta", "charger/test/set_delta", set_delta);
   // add_sub_topic("cc", "charger/test/cc", CC);
   // add_sub_topic("cv", "charger/test/cv", CV);
-  add_sub_topic("set_voltage", "charger/test/set_voltage", set_voltage);
+  // add_sub_topic("set_voltage", "charger/test/set_voltage", set_voltage);
   add_sub_topic("dis", "charger/test/dis", discharge);
-  add_sub_topic("calibrate", "charger/test/calibrate", map_volt);
+  // add_sub_topic("calibrate", "charger/test/calibrate", map_volt);
+  add_sub_topic("set_charge", "charger/test/set_charge", set_charge);
+  add_sub_topic("set_charge_cc", "charger/test/set_charge_cc", set_charge_cc);
+  add_sub_topic("set_charge_cv", "charger/test/set_charge_cv", set_charge_cv);
 
   init_brocker();
   init_output();
@@ -67,41 +82,18 @@ void loop(){
         loop_mqtt();
     }
     relay.loop();
-    if (wait_pub){
-      String volt_str;
-      float volt_f;      
-      volt_f = volt_manager.real_voltage;
-      volt_str = String(volt_f);      
-      public_data("voltage", volt_str.c_str());
-      if (ina219.begin()){
-        public_data("amperage", String(ina219.getCurrent()).c_str());
-        public_data("voltage_ina", String(ina219.getVoltage()).c_str());
+    if (wait_pub){    
+      public_data("voltage", String(volt_manager.real_voltage).c_str());      
+      public_data("amperage", String(volt_manager.pm_amperage).c_str());
+      public_data("voltage_ina", String(volt_manager.pm_voltage).c_str());
+      if (charge){
+        public_data("calib_data", "charge");
       }else{
-        public_data("amperage", String(-1).c_str());
-        public_data("voltage_ina", String(-1).c_str());
+        public_data("calib_data", "off");
       }
+    }
 
-      if (flag_map_volt){
-        if (counter_measure < max_counter_measure){
-          if (wait_voltage(volt_f)){
-            if (!volt_map.read_new_value(counter_measure, volt_f)){
-              map_volt("off");
-            }
-            // public_data("calib_data", String(volt_str + " " + String(counter_measure)).c_str());
-            counter_measure++;
-          }
-          CV(String(counter_measure));
-        }else{
-          flag_map_volt = false;
-          map_volt("off");
-        }
-      }
-
+    if (charge){
+      charge = volt_manager.charge(charge_cv, charge_cc);
     }
 }
-
-
-// void loop(){
-//   Serial.println(voltmetr.read_voltage());
-//   delay(100);
-// }
