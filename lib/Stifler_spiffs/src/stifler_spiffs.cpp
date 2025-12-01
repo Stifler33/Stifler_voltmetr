@@ -60,6 +60,7 @@ bool Voltage_map::init(){
     }
     
     is_init = true;
+    print_map();
     return true;
 }
 

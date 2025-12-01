@@ -22,7 +22,7 @@ void Stifler_relay::begin(){
     ledcSetup(ch_pwm::rl_minus, pwm_freq, res_pwm::relay);
     
     ledcAttachPin(pin::rl::end, ch_pwm::rl_end);
-    ledcAttachPin(pin::rl::plus, ch_pwm::rl_pu);
+    ledcAttachPin(pin::rl::pu, ch_pwm::rl_pu);
     ledcAttachPin(pin::rl::minus, ch_pwm::rl_minus);
     ledcAttachPin(pin::rl::plus, ch_pwm::rl_plus);
 }

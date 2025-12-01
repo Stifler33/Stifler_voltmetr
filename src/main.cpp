@@ -7,6 +7,16 @@ Stifler_voltage_manager volt_manager;
 
 GTimer<millis> wait_pub(1000, true);
 
+void switch_rl_end(String state){
+  state == "on" ? volt_manager.relay.end.on() :
+  volt_manager.relay.end.off();
+}
+
+void switch_rl_pu(String state){
+  state == "on" ? volt_manager.relay.pu.on() :
+  volt_manager.relay.pu.off();
+}
+
 void set_delta(String delta){
 
 }
@@ -19,6 +29,7 @@ void set_charge(String flag){
   }
   if (flag == "off"){
     charge = false;
+    volt_manager.off();
   }
 }
 
@@ -30,6 +41,10 @@ void set_charge_cc(String cc){
 float charge_cv;
 void set_charge_cv(String cv){
   charge_cv = cv.toFloat();
+}
+
+void set_duty_cc(String value){
+  volt_manager.set_duty_cc(value.toInt());
 }
 
 void setup(){
@@ -48,8 +63,8 @@ void setup(){
   add_pub_topic("voltage_ina", "charger/test/voltage_ina");
 
   add_pub_topic("amperage", "charger/test/amperage");
-  add_pub_topic("relay_end", "charger/test/rl_end");
-  add_pub_topic("relay_pu", "charger/test/rl_pu");
+  add_pub_topic("relay_end_status", "charger/test/rl_end_status");
+  add_pub_topic("relay_pu_status", "charger/test/rl_pu_status");
 
   add_pub_topic("cc", "charger/test/cc");
   add_pub_topic("cv", "charger/test/cv");
@@ -60,6 +75,9 @@ void setup(){
   add_sub_topic("set_charge", "charger/test/set_charge", set_charge);
   add_sub_topic("set_charge_cc", "charger/test/set_charge_cc", set_charge_cc);
   add_sub_topic("set_charge_cv", "charger/test/set_charge_cv", set_charge_cv);
+  add_sub_topic("relay_end", "charger/test/rl_end", switch_rl_end);
+  add_sub_topic("relay_pu", "charger/test/rl_pu", switch_rl_pu);
+  add_sub_topic("set_duty_cc", "charger/test/set_duty_cc", set_duty_cc);
 
   init_brocker();  
 }
@@ -70,9 +88,13 @@ void loop(){
     }
     volt_manager.loop();    
     if (wait_pub){    
-      public_data("voltage", String(volt_manager.real_voltage).c_str());      
-      public_data("amperage", String(volt_manager.pm_amperage).c_str());
-      public_data("voltage_ina", String(volt_manager.pm_voltage).c_str());
+      public_data("voltage", String(volt_manager.real_voltage).c_str(), true);
+      public_data("amperage", String(volt_manager.pm_amperage).c_str(), true);
+      public_data("voltage_ina", String(volt_manager.pm_voltage).c_str(), true);
+      public_data("relay_end_status", volt_manager.relay.end.state ? "on" : "off", true);
+      public_data("relay_pu_status", volt_manager.relay.pu.state ? "on" : "off", true);
+      public_data("cc", volt_manager.get_duty_cc().c_str(), true);
+      public_data("cv", volt_manager.get_duty_cv().c_str(), true);
       if (charge){
         public_data("calib_data", "charge");
       }else{

@@ -2,9 +2,29 @@
 #include <Arduino.h>
 #include <GTimer.h>
 
+/**
+ * частота ШИМ
+ */
 const static int pwm_freq = 20000;
-const static float difference_min_voltage = 0.01;
-const static float min_amperage_charge = 0.01;
+
+/**
+ * Допустимая разница(погрешность) между реальным и желаемым напряжением
+ */
+const float difference_min_voltage = 0.01;
+
+/**
+ * минимальный ток при зарядке
+ * 
+ * если ток меньше этого значения значит зарядка окончена
+ */
+const float min_amperage_charge = 0.01;
+
+/**
+ * допустимая разница между реальным током и желаемым
+ * 
+ * применяется в функции коррекции ампеража Stifler_voltage_manager::correct_amperage
+ */
+const float range_difference_amperage = 0.05;
 
 /**
  * каналы ШИМ для разных целей
@@ -34,7 +54,7 @@ class res_pwm{
  */
 class pwm_duty{
     public:
-        const static uint32_t relay = 120;            
+        const static uint32_t relay = 130;            
         const static uint32_t max = 255;
         const static uint32_t max_pu = 1024;
         const static uint32_t min = 0;

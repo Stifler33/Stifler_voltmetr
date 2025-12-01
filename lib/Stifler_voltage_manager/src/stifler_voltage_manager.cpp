@@ -1,24 +1,14 @@
 #include <stifler_voltage_manager.h>
 
+GTimer<millis> delay_amperage(100, false, GTMode::Interval);
+
 /**
  * какую полярность ампеража мы считаем разрядкой а какую зарядкой
  * @param amperage измеренный ток
  * @return true если зарядка false если разрядка
  */
 auto amperage_polarity = [](float amperage){
-    return amperage > 0;
-};
-
-auto increment_cc = [](int *cc){
-    if (*cc < pwm_duty::max_pu){
-        ledcWrite(ch_pwm::cc, *cc++);
-    }
-};
-
-auto decrement_cc = [](int *cc){
-    if (*cc > 0){
-        ledcWrite(ch_pwm::cc, *cc--);
-    }
+    return amperage < 0;
 };
 
 auto increment_cv = [](int *cv){
@@ -33,11 +23,10 @@ auto decrement_cv = [](int *cv){
     }
 };
 
-Stifler_voltage_manager::Stifler_voltage_manager(){
-    delta_voltage = 24420;
-    min_amperage_charge = 0.1;
-    duty_pwm_cc = 0;
-    duty_pwm_cv = 0;    
+Stifler_voltage_manager::Stifler_voltage_manager(): cc(ch_pwm::cc), cv(ch_pwm::cv) {
+    delta_voltage = 24420;    
+    cc.pwm_duty = 0;    
+    cc.fixed_duty = pwm_duty::max_pu;    
 }
 
 bool Stifler_voltage_manager::begin(){
@@ -52,13 +41,14 @@ bool Stifler_voltage_manager::begin(){
 
     relay.begin();
     voltmetr.begin(0, 1);
-    voltmetr.set_delta(delta_voltage);
+    voltmetr.set_delta(delta_voltage);    
     
     return map_v.init();    
 }
 
 bool Stifler_voltage_manager::set_pu_voltage(float voltage){
-    ledcWrite(ch_pwm::cv, map_v.get_duty(voltage));
+    cv.pwm_duty = map_v.get_duty(voltage);
+    ledcWrite(ch_pwm::cv, cv.pwm_duty);
     return true;
 }
 
@@ -73,33 +63,74 @@ bool Stifler_voltage_manager::charge(float desired_voltage, float desired_ampera
         charge_voltage = desired_voltage;
         set_pu_voltage(charge_voltage);
     }
+    if (desired_amperage != charge_amperage){
+        charge_amperage = desired_amperage;
+        cc.fixed_duty = pwm_duty::max_pu;
+    }
     relay.end.on();
     relay.pu.on();
-    bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
-    bool is_amperage = pm_amperage < min_amperage_charge;    
-    if (!is_voltage && is_amperage){
-        set_pu_voltage(0.0);
-        charge_voltage = 0.0;
-        relay.end.on();
-        relay.pu.on();
-        return true;
-    }
-    correct_amperage(desired_amperage);
-    return false;
+    // bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
+    // bool is_amperage = pm_amperage < min_amperage_charge;    
+    // if (!is_voltage && is_amperage){
+    //     set_pu_voltage(0.0);
+    //     charge_voltage = 0.0;
+    //     relay.end.off();
+    //     relay.pu.off();
+    //     return true;
+    // }
+    correct_amperage(charge_amperage);
+    return true;
 }
 
 void Stifler_voltage_manager::correct_amperage(float desired_amperage){
-    if (amperage_polarity(pm_amperage)){
-        if (pm_amperage < desired_amperage){
-            increment_cc(&duty_pwm_cc);
-        }else{
-            decrement_cc(&duty_pwm_cc);
-        }
-    }else{
-        if (abs(pm_amperage) < desired_amperage){
-            increment_cc(&duty_pwm_cc);
-        }else{
-            decrement_cc(&duty_pwm_cc);
-        }
+    float difference_amper = desired_amperage - abs(pm_amperage);    
+    if (difference_amper > range_difference_amperage){
+        cc.increment();        
+        return;
+    }
+
+    if (difference_amper < -range_difference_amperage){        
+        cc.decrement();
+        return;
+    }    
+    cc.fix_it_duty();
+}
+
+void Stifler_voltage_manager::off(){
+    relay.pu.off();
+    relay.end.off();
+    delay_amperage.stop();
+
+}
+
+String Stifler_voltage_manager::get_duty_cc(){
+    return String(cc.pwm_duty);
+}
+
+String Stifler_voltage_manager::get_duty_cv(){
+    return String(cv.pwm_duty);
+}
+
+void Stifler_voltage_manager::set_duty_cc(int duty){
+    cc.pwm_duty = duty;
+    ledcWrite(ch_pwm::cc, cc.pwm_duty);
+}
+
+void Stifler_voltage_manager::CC::increment(){
+    if (pwm_duty < fixed_duty && pwm_duty < pwm_duty::max_pu){
+        pwm_duty++;
+        ledcWrite(ch_pwm::cc, pwm_duty);
     }
 }
+
+void Stifler_voltage_manager::CC::decrement(){
+    if (pwm_duty > 0){
+        pwm_duty--;
+        ledcWrite(ch_pwm::cc, pwm_duty);        
+    }
+}
+
+void Stifler_voltage_manager::CC::fix_it_duty(){
+    fixed_duty = pwm_duty;
+}
+

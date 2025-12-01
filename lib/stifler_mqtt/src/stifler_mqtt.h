@@ -34,6 +34,6 @@ bool loop_mqtt();
  * @param name_topic имя топика
  * @param payload сообщение в текстовом формате
  */
-void public_data(String name_topic, const char* payload);
+void public_data(String name_topic, const char* payload, bool retain = false);
 
 void unsubscribe(const char *topic);
