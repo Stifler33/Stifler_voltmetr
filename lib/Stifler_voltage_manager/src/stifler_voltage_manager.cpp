@@ -93,6 +93,19 @@ bool Stifler_voltage_manager::charge(float desired_voltage, float desired_ampera
     return false;
 }
 
+bool Stifler_voltage_manager::discharge(float desired_voltage, float desired_amperage){
+    if (desired_voltage != discharge_voltage){
+        discharge_voltage = desired_voltage;
+    }
+
+    if (desired_amperage != discharge_amperage){
+        discharge_amperage = desired_amperage;
+    }
+
+    bool is_voltage = (real_voltage - discharge_voltage) < difference_min_voltage;
+    bool is_amperage = abs(pm_amperage) < min_amperage_charge;
+}
+
 void Stifler_voltage_manager::correct_amperage(float desired_amperage){
     float difference_amper = desired_amperage - abs(pm_amperage);    
     if (difference_amper > range_difference_amperage){

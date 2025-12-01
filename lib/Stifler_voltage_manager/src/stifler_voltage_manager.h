@@ -22,6 +22,8 @@ class Stifler_voltage_manager{
          */
         bool charge(float desired_voltage, float desired_amperage);
 
+        bool discharge(float desired_voltage, float desired_amperage);
+
         //цикл в котором обновляем показания с датчиков
         void loop();
 
@@ -90,7 +92,15 @@ class Stifler_voltage_manager{
                 ch = ch_pwm::cv;
             }
         };
+
+        class DIS: public CV{
+            public:
+            DIS(){
+                ch = ch_pwm::dis;
+            }
+        };
         CC cc;
         CV cv;
+        DIS dis;
         
 };
