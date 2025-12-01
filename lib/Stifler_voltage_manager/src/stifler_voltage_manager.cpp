@@ -72,8 +72,10 @@ bool Stifler_voltage_manager::charge(float desired_voltage, float desired_ampera
     }
     relay.end.on();
     relay.pu.on();
+
     bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
-    bool is_amperage = abs(pm_amperage) < min_amperage_charge;    
+    bool is_amperage = abs(pm_amperage) < min_amperage_charge;
+
     if (is_voltage && is_amperage){
         if (!wait_charge.running()){
             wait_charge.start();
@@ -83,18 +85,10 @@ bool Stifler_voltage_manager::charge(float desired_voltage, float desired_ampera
     }
 
     if (wait_charge){
-        set_pu_voltage(0.0);
-        cc.pwm_duty = 0;
-        cv.pwm_duty = 0;
-        charge_voltage = 0.0;
-        relay.end.off();
-        relay.pu.off();
+        off();
         return true;
     }
-
-    // if (!wait_charge.running()){
-    //     wait_charge.start();
-    // }    
+   
     correct_amperage(charge_amperage);
     return false;
 }
@@ -106,7 +100,7 @@ void Stifler_voltage_manager::correct_amperage(float desired_amperage){
         return;
     }
 
-    if (difference_amper < -range_difference_amperage){        
+    if (difference_amper < -range_difference_amperage){
         cc.decrement();
         return;
     }    
@@ -114,6 +108,7 @@ void Stifler_voltage_manager::correct_amperage(float desired_amperage){
 }
 
 void Stifler_voltage_manager::off(){
+    set_pu_voltage(0.0);
     relay.pu.off();
     relay.end.off();
     cc.pwm_duty = 0;
