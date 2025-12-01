@@ -9,7 +9,7 @@ class Stifler_voltage_manager{
         Stifler_voltage_manager();
         bool begin();
         bool set_pu_voltage(float voltage);
-        
+
         /**
          * Зарядка. Данную функцию вызываем в основом цикле для зарядки акб.
          * 
@@ -24,6 +24,8 @@ class Stifler_voltage_manager{
 
         //цикл в котором обновляем показания с датчиков
         void loop();
+
+        // выключение всего и сброс переменных
         void off();
         //напряжение с акб (ads1115)
         float real_voltage;
