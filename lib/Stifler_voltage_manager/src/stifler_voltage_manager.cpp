@@ -1,6 +1,7 @@
 #include <stifler_voltage_manager.h>
 
-GTimer<millis> delay_amperage(100, false, GTMode::Interval);
+// таймер для зарядки
+GTimer<millis> wait_charge(10000, false, GTMode::Timeout);
 
 /**
  * какую полярность ампеража мы считаем разрядкой а какую зарядкой
@@ -23,7 +24,7 @@ auto decrement_cv = [](int *cv){
     }
 };
 
-Stifler_voltage_manager::Stifler_voltage_manager(): cc(ch_pwm::cc), cv(ch_pwm::cv) {
+Stifler_voltage_manager::Stifler_voltage_manager(){
     delta_voltage = 24420;    
     cc.pwm_duty = 0;    
     cc.fixed_duty = pwm_duty::max_pu;    
@@ -59,27 +60,43 @@ void Stifler_voltage_manager::loop(){
 }
 
 bool Stifler_voltage_manager::charge(float desired_voltage, float desired_amperage){
+
     if (charge_voltage != desired_voltage){
         charge_voltage = desired_voltage;
         set_pu_voltage(charge_voltage);
     }
+
     if (desired_amperage != charge_amperage){
         charge_amperage = desired_amperage;
         cc.fixed_duty = pwm_duty::max_pu;
     }
     relay.end.on();
     relay.pu.on();
-    // bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
-    // bool is_amperage = pm_amperage < min_amperage_charge;    
-    // if (!is_voltage && is_amperage){
-    //     set_pu_voltage(0.0);
-    //     charge_voltage = 0.0;
-    //     relay.end.off();
-    //     relay.pu.off();
-    //     return true;
-    // }
+    bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
+    bool is_amperage = abs(pm_amperage) < min_amperage_charge;    
+    if (is_voltage && is_amperage){
+        if (!wait_charge.running()){
+            wait_charge.start();
+        }
+    }else{
+        wait_charge.stop();
+    }
+
+    if (wait_charge){
+        set_pu_voltage(0.0);
+        cc.pwm_duty = 0;
+        cv.pwm_duty = 0;
+        charge_voltage = 0.0;
+        relay.end.off();
+        relay.pu.off();
+        return true;
+    }
+
+    // if (!wait_charge.running()){
+    //     wait_charge.start();
+    // }    
     correct_amperage(charge_amperage);
-    return true;
+    return false;
 }
 
 void Stifler_voltage_manager::correct_amperage(float desired_amperage){
@@ -99,7 +116,10 @@ void Stifler_voltage_manager::correct_amperage(float desired_amperage){
 void Stifler_voltage_manager::off(){
     relay.pu.off();
     relay.end.off();
-    delay_amperage.stop();
+    cc.pwm_duty = 0;
+    cv.pwm_duty = 0;
+    cc.fixed_duty = pwm_duty::max_pu;
+    cv.fixed_duty = pwm_duty::max_pu;
 
 }
 
@@ -119,14 +139,14 @@ void Stifler_voltage_manager::set_duty_cc(int duty){
 void Stifler_voltage_manager::CC::increment(){
     if (pwm_duty < fixed_duty && pwm_duty < pwm_duty::max_pu){
         pwm_duty++;
-        ledcWrite(ch_pwm::cc, pwm_duty);
+        ledcWrite(ch, pwm_duty);
     }
 }
 
 void Stifler_voltage_manager::CC::decrement(){
     if (pwm_duty > 0){
         pwm_duty--;
-        ledcWrite(ch_pwm::cc, pwm_duty);        
+        ledcWrite(ch, pwm_duty);
     }
 }
 

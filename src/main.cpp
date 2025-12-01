@@ -21,14 +21,14 @@ void set_delta(String delta){
 
 }
 
-bool charge = false;
+bool charge = true;
 
 void set_charge(String flag){
   if (flag == "on"){
-    charge = true;
+    charge = false;
   }
   if (flag == "off"){
-    charge = false;
+    charge = true;
     volt_manager.off();
   }
 }
@@ -45,6 +45,14 @@ void set_charge_cv(String cv){
 
 void set_duty_cc(String value){
   volt_manager.set_duty_cc(value.toInt());
+}
+
+void set_min_amp_charge(String value){
+  min_amperage_charge = value.toFloat();
+}
+
+void set_difference_charge_voltage(String value){
+  difference_min_voltage = value.toFloat();
 }
 
 void setup(){
@@ -79,6 +87,9 @@ void setup(){
   add_sub_topic("relay_pu", "charger/test/rl_pu", switch_rl_pu);
   add_sub_topic("set_duty_cc", "charger/test/set_duty_cc", set_duty_cc);
 
+  add_sub_topic("set_char_amp", "charger/test/set_char_amp", set_min_amp_charge);
+  add_sub_topic("set_diff", "charger/test/set_diff", set_difference_charge_voltage);
+
   init_brocker();  
 }
 
@@ -95,14 +106,15 @@ void loop(){
       public_data("relay_pu_status", volt_manager.relay.pu.state ? "on" : "off", true);
       public_data("cc", volt_manager.get_duty_cc().c_str(), true);
       public_data("cv", volt_manager.get_duty_cv().c_str(), true);
-      if (charge){
+      if (!charge){
         public_data("calib_data", "charge");
       }else{
         public_data("calib_data", "off");
       }
+      
     }
 
-    if (charge){
+    if (!charge){
       charge = volt_manager.charge(charge_cv, charge_cc);
     }
 }

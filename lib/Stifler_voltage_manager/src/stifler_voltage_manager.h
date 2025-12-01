@@ -9,7 +9,19 @@ class Stifler_voltage_manager{
         Stifler_voltage_manager();
         bool begin();
         bool set_pu_voltage(float voltage);
+        
+        /**
+         * Зарядка. Данную функцию вызываем в основом цикле для зарядки акб.
+         * 
+         * передаем ей напряжение и вольтаж которыми хотим заряжать. 
+         * 
+         * напряжение выставляется согласно сохраненной таблице, ток корректируется каждый вызов функции
+         * @param desired_voltage желаемое напряжение зарядки
+         * @param desired_amperage желаемый ток зарядки
+         * @return true если зарядка окончена false если еще идет 
+         */
         bool charge(float desired_voltage, float desired_amperage);
+
         //цикл в котором обновляем показания с датчиков
         void loop();
         void off();
@@ -40,9 +52,9 @@ class Stifler_voltage_manager{
          */
         class CC{
             public:
-            uint8_t ch_pwm;
-            CC(uint8_t ch){
-                ch_pwm = ch;
+            uint8_t ch;
+            CC(){
+                ch = ch_pwm::cc;
             }
             /**
              * Текущее значение ШИМ
@@ -72,7 +84,9 @@ class Stifler_voltage_manager{
 
         class CV: public CC{
             public:
-            using CC::CC;
+            CV(){
+                ch = ch_pwm::cv;
+            }
         };
         CC cc;
         CV cv;

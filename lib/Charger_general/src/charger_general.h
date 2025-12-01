@@ -10,14 +10,14 @@ const static int pwm_freq = 20000;
 /**
  * Допустимая разница(погрешность) между реальным и желаемым напряжением
  */
-const float difference_min_voltage = 0.01;
+extern float difference_min_voltage;
 
 /**
  * минимальный ток при зарядке
  * 
  * если ток меньше этого значения значит зарядка окончена
  */
-const float min_amperage_charge = 0.01;
+extern float min_amperage_charge;
 
 /**
  * допустимая разница между реальным током и желаемым
