@@ -59,8 +59,7 @@ bool Voltage_map::init(){
         return false;
     }
     
-    is_init = true;
-    print_map();
+    is_init = true;    
     return true;
 }
 
@@ -110,8 +109,7 @@ int Voltage_map::get_duty(float voltage){
     if (voltage < 0){return 0;}
 
     for (int i = 0; i < DUTY; i++){
-        String i_str = String(i);
-        float v_in_map = 0.0;
+        String i_str = String(i);        
 
         if (json_voltage[i_str].is<float>()){
             if (float(json_voltage[i_str]) > voltage){

@@ -19,6 +19,8 @@ extern float difference_min_voltage;
  */
 extern float min_amperage_charge;
 
+extern float difference_min_pre_voltage;
+
 /**
  * допустимая разница между реальным током и желаемым
  * 

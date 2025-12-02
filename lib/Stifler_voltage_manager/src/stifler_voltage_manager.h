@@ -58,14 +58,15 @@ class Stifler_voltage_manager{
         Stifler_voltmetr voltmetr;
         // дельта для измеряемого напряжения. для ads1115
         int delta_voltage;
+        bool pre_running;
         float discharge_voltage;
         float discharge_amperage;
         float charge_voltage;
         float charge_amperage;
         // если идет зарядка true иначе false
-        bool is_charge;
+        bool is_running_charge;
         // если идет разрядка true иначе false
-        bool is_discharge;
+        bool is_running_discharge;
         //корректировка тока зарядки
         void correct_amperage_charge();
         // корректировка тока разрядки
@@ -105,6 +106,8 @@ class Stifler_voltage_manager{
              * фиксируем текущее значение скважности
              */
             void fix_it_duty();
+
+            void write_duty(int duty=0);
         };
 
         class CV: public CC{

@@ -48,13 +48,13 @@ bool Stifler_voltmetr::is_ready(){
 }
 
 bool Stifler_voltmetr::pm_voltage_amperage(float *for_value_voltage, float* for_value_amperage){
-    bool ready = power_monitor.begin();
-    if (ready){
+    bool ready_pm = power_monitor.begin();
+    if (ready_pm){
         *for_value_voltage = power_monitor.getVoltage();
         *for_value_amperage = power_monitor.getCurrent();
-        return ready;
+        return ready_pm;
     }
-    return ready;
+    return ready_pm;
 }
 
 bool Stifler_voltmetr::values(
@@ -63,8 +63,11 @@ bool Stifler_voltmetr::values(
     float *pm_voltage,
     float *power,
     float *mAh
-){
+){    
     bool ready_pm = power_monitor.begin();
+    if (!ready && !ready_pm){
+        return false;
+    }
     bool battary = readADC_SingleEnded(ch_p) > max_d / 2;    
     static float last_time = 0;
     
@@ -79,5 +82,5 @@ bool Stifler_voltmetr::values(
     float _mAh = abs(*amperage) * 1000;
     *mAh += _mAh * (delta_sec / 3600);
     last_time = millis();
-    return ready_pm && battary;
+    return battary;
 }
