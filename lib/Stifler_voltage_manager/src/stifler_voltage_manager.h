@@ -3,12 +3,17 @@
 #include <stifler_spiffs.h>
 #include <stifler_voltmetr.h>
 #include <stifler_relay.h>
-
+/**
+ * Класс для реализации работы алгоритмов зарядки, разрядки
+ * 
+ * измирение соответствующих параметров
+ * 
+ * управление необходимыми реле
+ */
 class Stifler_voltage_manager{
     public:
         Stifler_voltage_manager();
-        bool begin();
-        bool set_pu_voltage(float voltage);
+        bool begin();        
 
         /**
          * Зарядка. Данную функцию вызываем в основом цикле для зарядки акб.
@@ -37,7 +42,9 @@ class Stifler_voltage_manager{
         float pm_amperage;
         //true если все показания читаются
         bool is_ready;
+        // мощность real_voltage * pm_amperage
         float power;
+        // емкость
         float mAh;
         //управление реле
         Stifler_relay relay;
@@ -45,14 +52,26 @@ class Stifler_voltage_manager{
         String get_duty_cc();
         String get_duty_cv();
     private:
+        // карта напряжений для БП
         Voltage_map map_v;
-        Stifler_voltmetr voltmetr;        
+        // вольтметр на ads1115
+        Stifler_voltmetr voltmetr;
+        // дельта для измеряемого напряжения. для ads1115
         int delta_voltage;
         float discharge_voltage;
         float discharge_amperage;
         float charge_voltage;
-        float charge_amperage;                        
-        void correct_amperage(float desired_amperage);
+        float charge_amperage;
+        // если идет зарядка true иначе false
+        bool is_charge;
+        // если идет разрядка true иначе false
+        bool is_discharge;
+        //корректировка тока зарядки
+        void correct_amperage_charge();
+        // корректировка тока разрядки
+        void correct_amperage_dischage();
+        // устанавливаем напряжение на блоке питания согласно карте напряжений
+        bool set_pu_voltage(float voltage);
         /**
          * Храним значения и функции для управления сигналами CC CV
          */
@@ -95,7 +114,7 @@ class Stifler_voltage_manager{
             }
         };
 
-        class DIS: public CV{
+        class DIS: public CC{
             public:
             DIS(){
                 ch = ch_pwm::dis;

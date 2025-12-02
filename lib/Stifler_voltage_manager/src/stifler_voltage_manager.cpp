@@ -1,33 +1,22 @@
 #include <stifler_voltage_manager.h>
 
 // таймер для зарядки
-GTimer<millis> wait_charge(10000, false, GTMode::Timeout);
+GTimer<millis> wait_end_task(10000, false, GTMode::Timeout);
 
-/**
- * какую полярность ампеража мы считаем разрядкой а какую зарядкой
- * @param amperage измеренный ток
- * @return true если зарядка false если разрядка
- */
-auto amperage_polarity = [](float amperage){
-    return amperage < 0;
-};
-
-auto increment_cv = [](int *cv){
-    if (*cv < pwm_duty::max_pu){
-        ledcWrite(ch_pwm::cv, *cv++);
-    }
-};
-
-auto decrement_cv = [](int *cv){
-    if (*cv > 0){
-        ledcWrite(ch_pwm::cv, *cv--);
-    }
-};
-
+// Задаем необходимы начальные параметры
 Stifler_voltage_manager::Stifler_voltage_manager(){
-    delta_voltage = 24420;    
-    cc.pwm_duty = 0;    
-    cc.fixed_duty = pwm_duty::max_pu;    
+    delta_voltage = 24420;
+    cc.pwm_duty = 0;
+    cc.fixed_duty = pwm_duty::max_pu;
+
+    cv.pwm_duty = 0;
+    cv.fixed_duty = pwm_duty::max_pu;
+
+    dis.pwm_duty = 0;
+    dis.fixed_duty = pwm_duty::max_pu; 
+
+    is_charge = false;
+    is_discharge = false;
 }
 
 bool Stifler_voltage_manager::begin(){
@@ -80,24 +69,26 @@ bool Stifler_voltage_manager::charge(float desired_voltage, float desired_ampera
     }
     relay.end.on();
     relay.pu.on();
+    is_charge = true;
 
     bool is_voltage = (desired_voltage - real_voltage) < difference_min_voltage;
     bool is_amperage = abs(pm_amperage) < min_amperage_charge;
 
     if (is_voltage && is_amperage){
-        if (!wait_charge.running()){
-            wait_charge.start();
+        if (!wait_end_task.running()){
+            wait_end_task.start();
         }
     }else{
-        wait_charge.stop();
+        wait_end_task.stop();
     }
 
-    if (wait_charge){
+    if (wait_end_task){
         off();
+        is_charge = false;
         return true;
     }
    
-    correct_amperage(charge_amperage);
+    correct_amperage_charge();
     return false;
 }
 
@@ -108,24 +99,63 @@ bool Stifler_voltage_manager::discharge(float desired_voltage, float desired_amp
 
     if (desired_amperage != discharge_amperage){
         discharge_amperage = desired_amperage;
+        dis.fixed_duty = pwm_duty::max_pu;
     }
+
+    relay.end.on();    
+    is_discharge = true;
 
     bool is_voltage = (real_voltage - discharge_voltage) < difference_min_voltage;
     bool is_amperage = abs(pm_amperage) < min_amperage_charge;
+
+    if (is_voltage && is_amperage){
+        if (!wait_end_task.running()){
+            wait_end_task.start();
+        }
+    }else{
+        wait_end_task.stop();
+    }
+
+    if (wait_end_task){
+        off();
+        is_discharge = false;
+        return true;
+    }
+    correct_amperage_dischage();
+    return false;
 }
 
-void Stifler_voltage_manager::correct_amperage(float desired_amperage){
-    float difference_amper = desired_amperage - abs(pm_amperage);    
+void Stifler_voltage_manager::correct_amperage_charge(){
+    float difference_amper = charge_amperage - abs(pm_amperage);
+
     if (difference_amper > range_difference_amperage){
-        cc.increment();        
+        cc.increment();
         return;
     }
 
     if (difference_amper < -range_difference_amperage){
         cc.decrement();
         return;
-    }    
+    }
+
     cc.fix_it_duty();
+}
+
+void Stifler_voltage_manager::correct_amperage_dischage(){
+    float difference_amper = discharge_amperage - abs(pm_amperage);
+
+
+    if (difference_amper > range_difference_amperage && real_voltage >= discharge_voltage){
+        dis.increment();
+        return;
+    }
+
+    if (difference_amper < -range_difference_amperage || real_voltage <= discharge_voltage){
+        dis.decrement();
+        return;
+    }
+
+    dis.fix_it_duty();
 }
 
 void Stifler_voltage_manager::off(){
@@ -134,6 +164,8 @@ void Stifler_voltage_manager::off(){
     relay.end.off();
     cc.pwm_duty = 0;
     cv.pwm_duty = 0;
+    dis.pwm_duty = 0;
+    dis.fixed_duty = pwm_duty::max_pu;
     cc.fixed_duty = pwm_duty::max_pu;
     cv.fixed_duty = pwm_duty::max_pu;
 
@@ -169,4 +201,3 @@ void Stifler_voltage_manager::CC::decrement(){
 void Stifler_voltage_manager::CC::fix_it_duty(){
     fixed_duty = pwm_duty;
 }
-

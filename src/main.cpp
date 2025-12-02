@@ -33,6 +33,18 @@ void set_charge(String flag){
   }
 }
 
+bool discharge = true;
+
+void run_discharge(String value){
+  if (value == "on"){
+    discharge = false;
+  }
+  if (value == "off"){
+    discharge = true;
+    volt_manager.off();
+  }
+}
+
 float charge_cc;
 void set_charge_cc(String cc){
   charge_cc = cc.toFloat();
@@ -41,6 +53,16 @@ void set_charge_cc(String cc){
 float charge_cv;
 void set_charge_cv(String cv){
   charge_cv = cv.toFloat();
+}
+
+float discharge_cc;
+void set_discharge_cc(String cc){
+  discharge_cc = cc.toFloat();
+}
+
+float discharge_cv;
+void set_discharge_cv(String cv){
+  discharge_cv = cv.toFloat();
 }
 
 void set_duty_cc(String value){
@@ -81,8 +103,14 @@ void setup(){
   add_pub_topic("mAh", "charger/test/mAh");
 
   add_sub_topic("set_charge", "charger/test/set_charge", set_charge);
+  add_sub_topic("run_discharge", "charger/test/run_discharge", run_discharge);
+
   add_sub_topic("set_charge_cc", "charger/test/set_charge_cc", set_charge_cc);
   add_sub_topic("set_charge_cv", "charger/test/set_charge_cv", set_charge_cv);
+
+  add_sub_topic("set_discharge_cc", "charger/test/set_discharge_cc", set_discharge_cc);
+  add_sub_topic("set_discharge_cv", "charger/test/set_discharge_cv", set_discharge_cv);
+
   add_sub_topic("relay_end", "charger/test/rl_end", switch_rl_end);
   add_sub_topic("relay_pu", "charger/test/rl_pu", switch_rl_pu);
   add_sub_topic("set_duty_cc", "charger/test/set_duty_cc", set_duty_cc);
@@ -110,15 +138,18 @@ void loop(){
       public_data("power", String(volt_manager.power).c_str());
       public_data("mAh", String(volt_manager.mAh).c_str());
 
-      if (!charge){
-        public_data("calib_data", "charge");
-      }else{
-        public_data("calib_data", "off");
-      }
+      // if (!charge){
+      //   public_data("calib_data", "charge");
+      // }else{
+      //   public_data("calib_data", "off");
+      // }
       
     }
 
     if (!charge){
       charge = volt_manager.charge(charge_cv, charge_cc);
+    }
+    if (!discharge){
+      discharge = volt_manager.discharge(discharge_cv, discharge_cc);
     }
 }

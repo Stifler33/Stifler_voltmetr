@@ -76,7 +76,7 @@ bool Stifler_voltmetr::values(
     *power = abs(*amperage) * *real_voltage;
     
     float delta_sec = (millis() - last_time) / 1000.0;
-    float _mAh = *amperage * 1000;
+    float _mAh = abs(*amperage) * 1000;
     *mAh += _mAh * (delta_sec / 3600);
     last_time = millis();
     return ready_pm && battary;
