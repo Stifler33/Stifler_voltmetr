@@ -1,6 +1,7 @@
 #include "stifler_voltmetr.h"
 
 INA219 power_monitor(0.01, 32.0);
+GTimer<millis> timer_ah(delay_measure_ah, false, GTMode::Interval);
 
 bool Stifler_voltmetr::begin(uint8_t ch_voltage, uint8_t ch_polarity, uint8_t i2c_address, TwoWire *wire){
     ch_v = ch_voltage;    
@@ -54,4 +55,29 @@ bool Stifler_voltmetr::pm_voltage_amperage(float *for_value_voltage, float* for_
         return ready;
     }
     return ready;
+}
+
+bool Stifler_voltmetr::values(
+    float *real_voltage,
+    float *amperage,
+    float *pm_voltage,
+    float *power,
+    float *mAh
+){
+    bool ready_pm = power_monitor.begin();
+    bool battary = readADC_SingleEnded(ch_p) > max_d / 2;    
+    static float last_time = 0;
+    
+    int raw_voltage = readADC_SingleEnded(ch_v);
+    float result = raw_voltage * delta;    
+    *real_voltage = float(result * 0.001);
+    *amperage = power_monitor.getCurrent();    
+    *pm_voltage = power_monitor.getVoltage();
+    *power = abs(*amperage) * *real_voltage;
+    
+    float delta_sec = (millis() - last_time) / 1000.0;
+    float _mAh = *amperage * 1000;
+    *mAh += _mAh * (delta_sec / 3600);
+    last_time = millis();
+    return ready_pm && battary;
 }

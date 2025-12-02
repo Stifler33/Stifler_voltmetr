@@ -27,6 +27,13 @@ extern float min_amperage_charge;
 const float range_difference_amperage = 0.05;
 
 /**
+ * задержка для измирения емкости акб
+ * 
+ * значение в миллисекундах
+ */
+const uint32_t delay_measure_ah = 1000;
+
+/**
  * каналы ШИМ для разных целей
  */
 class ch_pwm{

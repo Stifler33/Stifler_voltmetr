@@ -37,6 +37,8 @@ class Stifler_voltage_manager{
         float pm_amperage;
         //true если все показания читаются
         bool is_ready;
+        float power;
+        float mAh;
         //управление реле
         Stifler_relay relay;
         void set_duty_cc(int duty);

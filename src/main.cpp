@@ -77,8 +77,8 @@ void setup(){
   add_pub_topic("cc", "charger/test/cc");
   add_pub_topic("cv", "charger/test/cv");
 
-  add_pub_topic("calib_data", "charger/test/calib_data");
-  add_pub_topic("calibrate", "charger/test/calibrate");
+  add_pub_topic("power", "charger/test/power");
+  add_pub_topic("mAh", "charger/test/mAh");
 
   add_sub_topic("set_charge", "charger/test/set_charge", set_charge);
   add_sub_topic("set_charge_cc", "charger/test/set_charge_cc", set_charge_cc);
@@ -98,7 +98,7 @@ void loop(){
         loop_mqtt();
     }
     volt_manager.loop();    
-    if (wait_pub){    
+    if (wait_pub){  
       public_data("voltage", String(volt_manager.real_voltage).c_str(), true);
       public_data("amperage", String(volt_manager.pm_amperage).c_str(), true);
       public_data("voltage_ina", String(volt_manager.pm_voltage).c_str(), true);
@@ -106,6 +106,10 @@ void loop(){
       public_data("relay_pu_status", volt_manager.relay.pu.state ? "on" : "off", true);
       public_data("cc", volt_manager.get_duty_cc().c_str(), true);
       public_data("cv", volt_manager.get_duty_cv().c_str(), true);
+
+      public_data("power", String(volt_manager.power).c_str());
+      public_data("mAh", String(volt_manager.mAh).c_str());
+
       if (!charge){
         public_data("calib_data", "charge");
       }else{

@@ -1,5 +1,7 @@
 #include <Adafruit_ADS1X15.h>
 #include <GyverINA.h>
+#include <GTimer.h>
+#include <charger_general.h>
 
 class Stifler_voltmetr: public Adafruit_ADS1X15{
     public:
@@ -15,12 +17,26 @@ class Stifler_voltmetr: public Adafruit_ADS1X15{
          * @param value передаем переменную для записи в нее считанного напряжения
          * @return true если ina в сети и напряжение считано
          */        
-        bool pm_voltage_amperage(float *for_value_voltage, float* for_value_amperage);        
+        bool pm_voltage_amperage(float *for_value_voltage, float* for_value_amperage);
+        
+        bool values(
+            float *real_voltage=0, 
+            float *amperage=0, 
+            float *pm_voltage=0, 
+            float *power=0,
+            float *mAh=0
+        );
 
         /**
          * Получить напряжение
          */
         float read_voltage();
+
+        /**
+         * Получаем значение емкости акб
+         * @param sec промежуток времени за который происходит измирение
+         */
+        float get_total_AH(int sec=1);
 
         /**
          * Записать измеренное напряжение в переменную.

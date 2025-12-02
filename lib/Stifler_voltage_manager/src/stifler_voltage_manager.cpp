@@ -55,8 +55,16 @@ bool Stifler_voltage_manager::set_pu_voltage(float voltage){
 
 void Stifler_voltage_manager::loop(){
     relay.loop();
-    is_ready = voltmetr.read_voltage(&real_voltage) 
-    && voltmetr.pm_voltage_amperage(&pm_voltage, &pm_amperage);
+    // is_ready = voltmetr.read_voltage(&real_voltage) 
+    // && voltmetr.pm_voltage_amperage(&pm_voltage, &pm_amperage);
+
+    is_ready = voltmetr.values(
+        &real_voltage,
+        &pm_amperage,
+        &pm_voltage,
+        &power,
+        &mAh
+    );
 }
 
 bool Stifler_voltage_manager::charge(float desired_voltage, float desired_amperage){
